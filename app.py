@@ -117,6 +117,10 @@ pipe.load_lora_weights("ostris/qwen_image_edit_2509_shirt_design",
                        weight_name="qwen_image_edit_2509_shirt_design.safetensors", 
                        adapter_name="shirt_design")
 
+pipe.load_lora_weights("dx8152/Qwen-Image-Edit-2509-Fusion", 
+                       weight_name="溶图.safetensors", 
+                       adapter_name="fusion-x")
+
 try:
     pipe.transformer.set_attn_processor(QwenDoubleStreamAttnProcessorFA3())
     print("Flash Attention 3 Processor set successfully.")
@@ -168,11 +172,14 @@ def infer(
             prompt = "Apply texture to object."
         elif lora_adapter == "Fuse-Objects":
             prompt = "Fuse object into background."
-
+        elif lora_adapter == "Super-Fusion":
+            prompt = "Blend the product into the background, correct its perspective and lighting, and make it naturally integrated with the scene."
+            
     adapters_map = {
         "Texture Edit": "texture",
         "Fuse-Objects": "fusion",
         "Cloth-Design-Fuse": "shirt_design",
+        "Super-Fusion": "fusion-x",
     }
     
     active_adapter = adapters_map.get(lora_adapter)
@@ -230,8 +237,7 @@ css="""
 #main-title h1 {font-size: 2.1em !important;}
 """
 
-
-with gr.Blocks(css=css, theme=orange_red_theme) as demo:
+with gr.Blocks() as demo:
     with gr.Column(elem_id="col-container"):
         gr.Markdown("# **Qwen-Image-Edit-2509-LoRAs-Fast-Fusion**", elem_id="main-title")
         gr.Markdown("Perform diverse image edits using specialized [LoRA](https://huggingface.co/models?other=base_model:adapter:Qwen/Qwen-Image-Edit-2509) adapters for the [Qwen-Image-Edit](https://huggingface.co/Qwen/Qwen-Image-Edit-2509) model.")
@@ -262,7 +268,7 @@ with gr.Blocks(css=css, theme=orange_red_theme) as demo:
                 with gr.Row():
                     lora_adapter = gr.Dropdown(
                         label="Choose Editing Style",
-                        choices=["Texture Edit", "Fuse-Objects", "Cloth-Design-Fuse"],
+                        choices=["Texture Edit", "Cloth-Design-Fuse", "Fuse-Objects", "Super-Fusion"],
                         value="Texture Edit",
                     )        
  
@@ -270,10 +276,12 @@ with gr.Blocks(css=css, theme=orange_red_theme) as demo:
             examples=[
                 ["examples/Cloth2.jpg", "examples/Design2.png", "Put this design on their shirt.", "Cloth-Design-Fuse"],
                 ["examples/Cup1.png", "examples/Wood1.png", "Apply wood texture to mug.", "Texture Edit"],
+                ["examples/Cloth1.jpg", "examples/Design1.png", "Put this design on their shirt.", "Cloth-Design-Fuse"],
+                ["examples/F3.jpg", "examples/F4.jpg", "Replace her glasses with the new glasses from image 1.", "Super-Fusion"],
+                ["examples/F1.jpg", "examples/F2.jpg", "Put the small bottle on the table.", "Super-Fusion"],
                 ["examples/Mug1.jpg", "examples/Texture1.jpg", "Apply the design from image 2 to the mug.", "Texture Edit"],
                 ["examples/Cat1.jpg", "examples/Glass1.webp", "A cat wearing glasses in image 2.", "Fuse-Objects"],
-                ["examples/Cloth1.jpg", "examples/Design1.png", "Put this design on their shirt.", "Cloth-Design-Fuse"],
-                ["examples/Cloth3.jpg", "examples/Design3.png", "Put this design on their shirt.", "Cloth-Design-Fuse"],
+
             ],
             inputs=[image_1, image_2, prompt, lora_adapter],
             outputs=[output_image, seed],
@@ -288,4 +296,5 @@ with gr.Blocks(css=css, theme=orange_red_theme) as demo:
         outputs=[output_image, seed]
     )
     
-demo.launch(mcp_server=True, ssr_mode=False, show_error=True)
+if __name__ == "__main__":
+    demo.queue(max_size=30).launch(css=css, theme=orange_red_theme, mcp_server=True, ssr_mode=False, show_error=True)
