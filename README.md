@@ -57,6 +57,18 @@ pip install git+https://github.com/QwenLM/QwenImage.git  # For qwenimage custom 
 - Fork the repo, create a new Space on [Hugging Face](https://huggingface.co/spaces), and link it. Enable GPU in Space settings.
 - Models and LoRAs auto-download on startup.
 
+## Hardware & Environment Requirements
+
+| Component | Requirement | Details from Log |
+| :--- | :--- | :--- |
+| **GPU Model** | NVIDIA Enterprise (H200 / H100 / A100) | High VRAM requirement (MIG or full card) |
+| **VRAM** | **80 GB Recommended** (Min 70 GB) | Peak tensor packing reached **60.8 GB** |
+| **System RAM** | 128 GB+ | Required for safe model offloading/loading |
+| **Disk Space** | ~60 GB+ | Transformer (~21GB) + Text Encoders (~17GB) + LoRAs |
+| **Python** | v3.13 | Detected `cpython-313` |
+| **PyTorch** | v2.9.1 | `2.9.1+cu128` |
+| **CUDA** | v12.8 | `torch29-cxx11-cu128` |
+
 ## Usage
 
 1. **Upload Images**: Select a "Base Image" (e.g., a mug) and a "Reference Image" (e.g., wood texture).
